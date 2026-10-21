@@ -1,0 +1,20 @@
+{
+  // Только для редактора и `npm run typecheck`: сборки нет, Node 24 запускает .ts, вырезая типы.
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "nodenext",
+    "lib": ["esnext"],
+    "types": ["node"],
+    "strict": true,
+    "noEmit": true,
+    // Node требует расширение в импортах: './file.ts'.
+    "allowImportingTsExtensions": true,
+    // Node не угадывает, что импорт нужен только для типа, — пишем `import type`.
+    "verbatimModuleSyntax": true,
+    // Без enum, namespace и parameter properties: Node не умеет их просто вырезать.
+    "erasableSyntaxOnly": true,
+    "resolveJsonModule": true,
+    "skipLibCheck": true
+  },
+  "include": ["src", "scripts"]
+}

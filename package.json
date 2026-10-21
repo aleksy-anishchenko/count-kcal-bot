@@ -1,0 +1,30 @@
+{
+  "name": "count-kcal-bot",
+  "version": "0.2.0",
+  "private": true,
+  "description": "Telegram-бот «Подсчёт калорий» (@count_kcal_bot): считает калории и БЖУ по сообщению (grammY + node:sqlite + DeepSeek)",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node --env-file=.env src/main.ts",
+    "dev": "node --watch --env-file=.env src/main.ts",
+    "test": "node --env-file=.env.test --test",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "backup": "node --env-file=.env scripts/backup-db.ts"
+  },
+  "dependencies": {
+    "@grammyjs/runner": "^2.0.3",
+    "grammy": "^1.30.0",
+    "zxing-wasm": "^3.1.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^24.0.0",
+    "eslint": "^10.13.0",
+    "typescript": "^5.8.0",
+    "typescript-eslint": "^8.72.0"
+  }
+}

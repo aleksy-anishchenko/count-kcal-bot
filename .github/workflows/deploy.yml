@@ -1,0 +1,72 @@
+name: Deploy
+
+# Как у сайта: проверки, файлы на сервер через rsync, перезапуск по SSH — только вместо pm2 здесь Docker.
+on:
+  push:
+    branches: [master]
+
+# Два пуша подряд не выкатываются одновременно: второй ждёт, пока закончит первый.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+env:
+  SERVER: root@62.132.3.59
+  APP_DIR: /opt/count-kcal-bot
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Test
+        run: npm test
+
+  deploy:
+    needs: check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          echo "StrictHostKeyChecking=no" >> ~/.ssh/config
+
+      # Только то, что нужно для сборки образа. --delete чистит лишнее лишь внутри src/ и scripts/,
+      # поэтому .env, который лежит только на сервере, rsync не тронет.
+      - name: Deploy files
+        run: |
+          rsync -az --delete \
+            -e "ssh -i ~/.ssh/deploy_key" \
+            Dockerfile compose.yaml .dockerignore package.json package-lock.json src scripts \
+            "$SERVER:$APP_DIR/"
+
+      # Образ собирается, пока старый бот работает; потом compose останавливает его и запускает новый.
+      # prune удаляет образы прошлых сборок, иначе они копились бы на диске.
+      - name: Restart bot
+        run: |
+          ssh -i ~/.ssh/deploy_key "$SERVER" \
+            "cd $APP_DIR && docker compose up -d --build && docker image prune -f"

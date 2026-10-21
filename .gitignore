@@ -1,0 +1,10 @@
+node_modules/
+.env
+
+# База SQLite и её служебные файлы (WAL-режим создаёт -wal и -shm)
+*.db
+*.db-wal
+*.db-shm
+
+# Настройки WebStorm — у каждого свои
+.idea/

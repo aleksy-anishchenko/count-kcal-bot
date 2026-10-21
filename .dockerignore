@@ -1,0 +1,9 @@
+# .env передаётся через compose, а не зашивается в образ.
+node_modules
+.env
+*.db
+*.db-wal
+*.db-shm
+.idea
+.git
+*.backup-*.tar.gz

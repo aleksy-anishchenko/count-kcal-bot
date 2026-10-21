@@ -1,0 +1,23 @@
+# Выкат, обновление и бэкап — README, «Выкат на сервер».
+
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      # Перекрывает DB_PATH из .env: база на томе переживает пересборку образа.
+      DB_PATH: /app/data/kcal.db
+    volumes:
+      - data:/app/data
+    # docker stop ждёт 10 с и убивает; боту нужно до 70 с, чтобы доработать начатое.
+    stop_grace_period: 75s
+    # По умолчанию Docker копит логи без ограничения — за месяцы они заняли бы диск.
+    logging:
+      driver: json-file
+      options:
+        max-size: 10m
+        max-file: "3"
+
+volumes:
+  data:
