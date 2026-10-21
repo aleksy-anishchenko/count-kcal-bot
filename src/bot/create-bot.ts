@@ -9,7 +9,6 @@ import { handleBotError } from './error-handler.ts';
 import { clearFeature } from './features/clear.ts';
 import { helpFeature } from './features/help.ts';
 import { photoEntryFeature } from './features/photo-entry.ts';
-import { statsFeature } from './features/stats.ts';
 import { textEntryFeature } from './features/text-entry.ts';
 import { todayFeature } from './features/today.ts';
 import { undoFeature } from './features/undo.ts';
@@ -28,7 +27,7 @@ export function createBot(token: string): Bot<BotContext> {
   bot.use(accessMiddleware);
 
   // Команды раньше текста, иначе /today ушёл бы в нейросеть как еда.
-  bot.use(helpFeature, todayFeature, weekFeature, statsFeature, undoFeature, clearFeature);
+  bot.use(helpFeature, todayFeature, weekFeature, undoFeature, clearFeature);
   bot.use(textEntryFeature, photoEntryFeature);
   bot.use(unhandledFeature); // последним
 

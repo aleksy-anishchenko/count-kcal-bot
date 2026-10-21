@@ -35,8 +35,7 @@ textEntryFeature.on('message:text', async (ctx) => {
     await ctx.reply('Не нашёл еды в сообщении. Напиши, например:\n«овсянка 100 г и 2 яйца»');
     return;
   }
-  // Как у фото: запись из одних «?» только испортила бы итог дня. Частично оценённую сохраняем —
-  // неоценённый продукт виден в ответе, а итог помечен как заниженный.
+  // Продукты без калорий не записываются (save-entry.ts) — здесь записывать было бы нечего.
   if (recognition.food.every((item) => item.kcal === null)) {
     const names = recognition.food.map((item) => item.name).join(', ');
     await ctx.reply(`Не смог оценить калории: ${names}. Уточни, что это и сколько, ` +

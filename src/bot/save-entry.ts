@@ -2,7 +2,7 @@ import { InlineKeyboard, type Context } from 'grammy';
 import { addEntry, findDuplicateEntry, getDaySummary } from '../db/entries.ts';
 import type { Product } from '../products/product.ts';
 import type { Recognition } from '../recognition/types.ts';
-import { formatDay, formatDayLabel, formatFoodList, formatSourceNote, formatTime, formatTotals } from './format.ts';
+import { formatDayLabel, formatFoodList, formatSourceNote, formatTime, formatTotals } from './format.ts';
 import { getUserId, replyLong } from './telegram-helpers.ts';
 
 const DUPLICATE_WINDOW_MS = 30 * 60_000;
@@ -16,7 +16,10 @@ export type EntryMeta = {
   product?: Product | null;
 };
 
-/** Ждёт непустой recognition.food: на «ничего не нашёл» отвечают обработчики — советы у текста и фото разные. */
+/**
+ * Ждёт хотя бы один продукт с калориями: на «ничего не оценил» отвечают обработчики — советы у текста и фото разные.
+ * Продукт без калорий не записываем — он испортил бы итог дня, — но называем, чтобы он не пропал молча.
+ */
 export async function saveAndReply(
   ctx: Context,
   recognition: Recognition,
@@ -29,15 +32,21 @@ export async function saveAndReply(
     ? findDuplicateEntry(getUserId(ctx), entryText, new Date(sentAt.getTime() - DUPLICATE_WINDOW_MS))
     : null;
 
-  const { id, day } = addEntry(getUserId(ctx), entryText, recognition.food, sentAt);
+  const food = recognition.food.filter((item) => item.kcal !== null);
+  const skipped = recognition.food.filter((item) => item.kcal === null).map((item) => item.name);
+  const { id, day } = addEntry(getUserId(ctx), entryText, food, sentAt);
 
   const lines = [
-    `✅ Записал (${formatDay(day)})`,
+    '✅ Записал',
     '',
-    formatFoodList(recognition.food),
+    formatFoodList(food),
     '',
     `Итого за ${formatDayLabel(day)}: ${formatTotals(getDaySummary(getUserId(ctx), day))}`,
   ];
+  if (skipped.length > 0) {
+    lines.push('', `⚠️ Не записал — не смог оценить калории: ${skipped.join(', ')}. ` +
+      'Напиши отдельно, что это и сколько, — посчитаю.');
+  }
   const sourceNote = formatSourceNote(recognition.source, product);
   if (sourceNote) lines.push('', sourceNote);
   if (duplicate) {

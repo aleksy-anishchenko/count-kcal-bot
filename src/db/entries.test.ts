@@ -24,16 +24,13 @@ test('addEntry + getDayFood + getDaySummary', () => {
   const summary = getDaySummary(userId, day);
   assert.equal(summary.kcal, 350);
   assert.equal(summary.foodCount, 2);
-  assert.equal(summary.unknownCount, 0);
 });
 
-test('unknownCount: продукт с null хотя бы в одном поле', () => {
+test('getDaySummary: неизвестное БЖУ (null) просто не входит в сумму', () => {
   const userId = 2;
-  const { day } = addEntry(userId, 'x', [item('а', 100), item('б', null), item('в', 50, { fat: null })], new Date('2026-10-20T08:00:00Z'));
+  const { day } = addEntry(userId, 'x', [item('а', 100), item('б', 50, { fat: null })], new Date('2026-10-20T08:00:00Z'));
   const summary = getDaySummary(userId, day);
-  assert.equal(summary.kcal, 150);
-  assert.equal(summary.foodCount, 3);
-  assert.equal(summary.unknownCount, 2);
+  assert.deepEqual([summary.kcal, summary.fat, summary.foodCount], [150, 1, 2]);
 });
 
 test('getDaySummaries: дни без записей возвращаются с нулями', () => {

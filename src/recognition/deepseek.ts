@@ -12,8 +12,6 @@ const RETRY_DELAY_MS = 2000;
 
 export type ChatCompletion = {
   choices?: { message?: { content?: string }; finish_reason?: string }[];
-  /** prompt_cache_hit_tokens — часть входа из кэша DeepSeek, она дешевле. */
-  usage?: { prompt_tokens?: number; completion_tokens?: number; prompt_cache_hit_tokens?: number };
 };
 
 /** Один повтор при временной ошибке. Таймаут не повторяем: 60 с уже прошли, пользователь ждёт. */

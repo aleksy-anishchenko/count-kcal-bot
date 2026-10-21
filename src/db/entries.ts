@@ -19,7 +19,6 @@ export type DaySummary = {
   fat: number;
   carbs: number;
   foodCount: number;
-  unknownCount: number; // продукты, где хоть одно из ккал/БЖУ — null: итог занижен
 };
 
 const ENTRY_COLUMNS = 'id, day, created_at AS createdAt, text';
@@ -37,15 +36,13 @@ const queries = {
     ORDER BY f.id
   `),
 
-  // SUM молча пропускает NULL, поэтому продукты без оценки считаем отдельно.
   selectTotalsByDay: db.prepare(`
     SELECT e.day,
            SUM(f.kcal)    AS kcal,
            SUM(f.protein) AS protein,
            SUM(f.fat)     AS fat,
            SUM(f.carbs)   AS carbs,
-           COUNT(*)       AS foodCount,
-           SUM(f.kcal IS NULL OR f.protein IS NULL OR f.fat IS NULL OR f.carbs IS NULL) AS unknownCount
+           COUNT(*)       AS foodCount
     FROM food f JOIN entries e ON e.id = f.entry_id
     WHERE e.user_id = ? AND e.day BETWEEN ? AND ?
     GROUP BY e.day
@@ -110,7 +107,6 @@ export function getDaySummaries(userId: number, days: string[]): DaySummary[] {
       fat: totals?.fat ?? 0,
       carbs: totals?.carbs ?? 0,
       foodCount: totals?.foodCount ?? 0,
-      unknownCount: totals?.unknownCount ?? 0,
     };
   });
 }

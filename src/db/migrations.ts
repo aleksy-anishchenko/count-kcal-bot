@@ -82,4 +82,9 @@ export const MIGRATIONS: string[] = [
     completion_tokens    INTEGER NOT NULL    -- на выходе: ответ модели
   );
   `,
+
+  // 6. /stats убран: расход токенов виден на platform.deepseek.com.
+  `
+  DROP TABLE ai_usage;
+  `,
 ];

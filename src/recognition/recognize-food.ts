@@ -1,4 +1,3 @@
-import { recordAiUsage } from '../db/ai-usage.ts';
 import { postChatCompletion, type ChatCompletion } from './deepseek.ts';
 import { normalizeRecognition } from './normalize.ts';
 import { SYSTEM_PROMPT } from './prompt.ts';
@@ -65,15 +64,6 @@ async function requestRecognition({ text, images = [] }: RecognitionInput): Prom
 
   const data = (await res.json()) as ChatCompletion;
   const choice = data.choices?.[0];
-
-  // Токены списаны, даже если ответ дальше окажется обрезанным или мусорным.
-  if (data.usage) {
-    recordAiUsage({
-      promptTokens: data.usage.prompt_tokens ?? 0,
-      cachedPromptTokens: data.usage.prompt_cache_hit_tokens ?? 0,
-      completionTokens: data.usage.completion_tokens ?? 0,
-    });
-  }
 
   if (choice?.finish_reason === 'length') {
     throw new TruncatedResponseError(

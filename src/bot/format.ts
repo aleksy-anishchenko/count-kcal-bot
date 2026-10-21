@@ -21,9 +21,8 @@ export const formatNumber = (value: number | null | undefined): string =>
   (value == null ? '?' : String(Math.round(value)));
 
 export function formatTotals(summary: DaySummary): string {
-  const unknown = summary.unknownCount > 0 ? ` (⚠️ без оценки: ${summary.unknownCount})` : '';
   return `${formatNumber(summary.kcal)} ккал · Б ${formatNumber(summary.protein)} / ` +
-    `Ж ${formatNumber(summary.fat)} / У ${formatNumber(summary.carbs)}${unknown}`;
+    `Ж ${formatNumber(summary.fat)} / У ${formatNumber(summary.carbs)}`;
 }
 
 export function formatFoodList(food: FoodItem[]): string {

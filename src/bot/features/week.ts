@@ -21,9 +21,8 @@ weekFeature.command('week', async (ctx) => {
   let averageLine = 'Среднее: пока нет записей за прошлые дни';
   if (finishedDays.length > 0) {
     const averageKcal = Math.round(finishedDays.reduce((sum, summary) => sum + summary.kcal, 0) / finishedDays.length);
-    const unknown = finishedDays.some((summary) => summary.unknownCount > 0) ? ' ⚠️ занижено: есть продукты без оценки' : '';
     const days = `${finishedDays.length} ${pluralize(finishedDays.length, ['дню', 'дням', 'дням'])}`;
-    averageLine = `Среднее: ${averageKcal} ккал/день (по ${days} с записями, без сегодня)${unknown}`;
+    averageLine = `Среднее: ${averageKcal} ккал/день (по ${days} с записями, без сегодня)`;
   }
 
   await ctx.reply([

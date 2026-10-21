@@ -8,7 +8,7 @@ export async function accessMiddleware(ctx: Context, next: NextFunction): Promis
   if (config.allowedUserIds.length > 0 && !config.allowedUserIds.includes(ctx.from.id)) {
     // На служебные апдейты (например, «пользователь заблокировал бота») ответ упал бы с 403.
     if (ctx.message) {
-      await ctx.reply(`⛔ Доступ закрыт. Твой id: ${ctx.from.id} — добавь его в ALLOWED_USER_IDS.`);
+      await ctx.reply(`⛔ Доступ закрыт: это личный бот. Чтобы получить доступ, отправь владельцу бота свой id: ${ctx.from.id}`);
     } else if (ctx.callbackQuery) {
       await ctx.answerCallbackQuery({ text: '⛔ Доступ закрыт' });
     }

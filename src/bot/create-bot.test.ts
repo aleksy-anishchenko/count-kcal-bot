@@ -37,7 +37,6 @@ let offRequests = 0;
 
 const aiReply = (answer: object, finishReason = 'stop') => () => Response.json({
   choices: [{ message: { content: JSON.stringify(answer) }, finish_reason: finishReason }],
-  usage: { prompt_tokens: 1000, completion_tokens: 50, prompt_cache_hit_tokens: 600 },
 });
 const imagesIn = (request: ChatRequest): number => {
   const content = request.messages[1].content;
@@ -77,7 +76,7 @@ test('в группе бот молчит', async () => {
 });
 
 test('чужой пользователь: доступ закрыт и для сообщений, и для кнопок', async () => {
-  assert.match(sentText(await telegram.sendText('банан', { userId: 2 })), /Доступ закрыт. Твой id: 2/);
+  assert.match(sentText(await telegram.sendText('банан', { userId: 2 })), /Доступ закрыт: это личный бот\. Чтобы получить доступ, отправь владельцу бота свой id: 2/);
   assert.deepEqual(callbackAnswers(await telegram.pressButton('undo:1', 2)), ['⛔ Доступ закрыт']);
 });
 
@@ -141,16 +140,23 @@ test('/today и /week с записями', async () => {
   assert.match(sentText(await telegram.sendText('/week')), /📊 Последние 7 дней[\s\S]*Среднее: пока нет записей за прошлые дни/);
 });
 
-test('/stats считает все ответы нейросети с токенами, включая обрезанный', async () => {
-  // банан, банан, «много еды» (обрезан), «сходил в зал», печенье — 5 ответов по 1000 токенов на входе.
-  assert.match(sentText(await telegram.sendText('/stats')), /Сегодня: 5 запросов, на входе 5\s000 токенов \(из кэша 3\s000\), на выходе 250/);
-});
-
 test('кнопка «Отменить»: удаляет свою запись и убирает кнопку; второй раз — «уже удалена»', async () => {
   const calls = await telegram.pressButton(bananaUndo);
   assert.match(sentText(calls), /↩️ Удалил запись от .*\nбанан\n[\s\S]*Итого за сегодня: 90 ккал/);
   assert.ok(hasCall(calls, 'editMessageReplyMarkup'));
   assert.deepEqual(callbackAnswers(await telegram.pressButton(bananaUndo)), ['Эта запись уже удалена.']);
+});
+
+test('часть продуктов не оценена: записываем остальные, неоценённые называем', async () => {
+  aiAnswers.push(aiReply({ food: [
+    { name: 'кофе', amount: '1 чашка', kcal: 60, protein: 3, fat: 3, carbs: 5 },
+    { name: 'бабушкин пирожок', amount: '1 шт', kcal: null },
+  ] }));
+  const reply = sentText(await telegram.sendText('кофе и бабушкин пирожок'));
+  assert.match(reply, /• кофе — 1 чашка — 60 ккал/);
+  assert.doesNotMatch(reply, /• бабушкин пирожок/);
+  assert.match(reply, /⚠️ Не записал — не смог оценить калории: бабушкин пирожок\. Напиши отдельно/);
+  assert.doesNotMatch(sentText(await telegram.sendText('/today')), /пирожок/);
 });
 
 test('штрихкод из Open Food Facts: вся упаковка, без нейросети', async () => {
