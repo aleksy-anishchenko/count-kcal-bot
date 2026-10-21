@@ -1,4 +1,4 @@
-// Бэкап базы раз в сутки по cron: node --env-file=.env scripts/backup-db.ts /backups
+// Бэкап базы по cron (раз в неделю, строка — в CLAUDE.md): node --env-file=.env scripts/backup-db.ts /backups
 // cp при WAL-режиме небезопасен — свежие записи могут лежать в kcal.db-wal. backup() из node:sqlite
 // снимает целостную копию, даже пока бот пишет в базу.
 

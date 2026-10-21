@@ -1,4 +1,4 @@
-# Выкат, обновление и бэкап — README, «Выкат на сервер».
+# Выкат — push в master (.github/workflows/deploy.yml); сервер и бэкап — CLAUDE.md.
 
 services:
   bot:
